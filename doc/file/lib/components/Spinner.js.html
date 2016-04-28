@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/components/Spinner.js | react-load API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/cchamberlain/react-load" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">components</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/components/Spinner.js~Spinner.html">Spinner</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/components/Spinner.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * Copyright (c) 2011-2014 Felix Gnass
+ * Licensed under the MIT license
+ * http://spin.js.org/
+ * ES6ified by Cole Chamberlain
+ *
+ * Example:
+    var opts = {
+      lines: 12             // The number of lines to draw
+    , length: 7             // The length of each line
+    , width: 5              // The line thickness
+    , radius: 10            // The radius of the inner circle
+    , scale: 1.0            // Scales overall size of the spinner
+    , corners: 1            // Roundness (0..1)
+    , color: &apos;#000&apos;         // #rgb or #rrggbb
+    , opacity: 1/4          // Opacity of the lines
+    , rotate: 0             // Rotation offset
+    , direction: 1          // 1: clockwise, -1: counterclockwise
+    , speed: 1              // Rounds per second
+    , trail: 100            // Afterglow percentage
+    , fps: 20               // Frames per second when using setTimeout()
+    , zIndex: 2e9           // Use a high z-index by default
+    , className: &apos;spinner&apos;  // CSS class to assign to the element
+    , top: &apos;50%&apos;            // center vertically
+    , left: &apos;50%&apos;           // center horizontally
+    , shadow: false         // Whether to render a shadow
+    , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+    , position: &apos;absolute&apos;  // Element positioning
+    }
+    var target = document.getElementById(&apos;foo&apos;)
+    var spinner = new Spinner(opts).spin(target)
+ */
+
+import React, { Component, PropTypes } from &apos;react&apos;
+
+
+
+
+/**
+ * Creates an opacity keyframe animation rule and returns its name.
+ * Since most mobile Webkits have timing issues with animation-delay,
+ * we create separate rules for each line/segment.
+ */
+const addAnimation = (alpha, trail, i, lines) =&gt; {
+  var name = [&apos;opacity&apos;, trail, ~~(alpha * 100), i, lines].join(&apos;-&apos;)
+    , start = 0.01 + i/lines * 100
+    , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
+    , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf(&apos;Animation&apos;)).toLowerCase()
+    , pre = prefix &amp;&amp; &apos;-&apos; + prefix + &apos;-&apos; || &apos;&apos;
+
+  if (!animations[name]) {
+    sheet.insertRule(`
+@${pre}keyframes ${name}{
+0%{opacity:${z}}
+${start}%{opacity:${alpha}}
+${start+0.01}%{opacity:1}
+${(start+trail) % 100}%{opacity:${alpha}}
+100%{opacity:${z}}
+}`, sheet.cssRules.length)
+    animations[name] = 1
+  }
+
+  return name
+}
+
+
+/**
+ * Returns the line color from the given string or array.
+ */
+const getColor = (color, idx) =&gt; typeof color == &apos;string&apos; ? color : color[idx % color.length]
+
+  /**
+   * Internal method that adjusts the opacity of a single line.
+   * Will be overwritten in VML fallback mode below.
+   */
+const opacity = (el, i, val) =&gt; {
+  if (i &lt; el.childNodes.length) el.childNodes[i].style.opacity = val
+}
+
+
+/** React component for segments */
+const Segment = props =&gt; {
+  const { style, children } = props
+  const segmentStyle = { ...style, position: &apos;absolute&apos; }
+  return (
+    &lt;div style={segmentStyle} children={children} /&gt;
+  )
+}
+
+
+/** React component to show during loading */
+export default class Spinner extends Component {
+  static defaultProps = { lines: 14             // The number of lines to draw
+                        , length: 12            // The length of each line
+                        , width: 8              // The line thickness
+                        , radius: 20            // The radius of the inner circle
+                        , scale: 1.0            // Scales overall size of the spinner
+                        , corners: 1            // Roundness (0..1)
+                        , color: &apos;#f2c73d&apos;      // #rgb or #rrggbb
+                        , opacity: 1/4          // Opacity of the lines
+                        , rotate: 0             // Rotation offset
+                        , direction: 1          // 1: clockwise, -1: counterclockwise
+                        , speed: 1              // Rounds per second
+                        , trail: 100            // Afterglow percentage
+                        , fps: 20               // Frames per second when using setTimeout()
+                        , zIndex: 2e9           // Use a high z-index by default
+                        , className: &apos;spinner&apos;  // CSS class to assign to the element
+                        , top: &apos;50%&apos;            // center vertically
+                        , left: &apos;50%&apos;           // center horizontally
+                        , shadow: false         // Whether to render a shadow
+                        , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
+                        , position: &apos;absolute&apos;  // Element positioning
+                        };
+
+  render() {
+    const { position
+          , zIndex
+          , left
+          , top
+          , lines
+          , direction
+          , scale
+          , length
+          , width
+          , corners
+          , rotate
+          , opacity
+          , color
+          , shadow
+          } = this.props
+    const containerStyle = { width: 0, position, zIndex, left, top }
+
+    let start = (lines - 1) * (1 - direction) / 2
+
+    const renderSegments = () =&gt; lines.map((x, i) =&gt; {
+      const segmentStyle =  { top: 1 + ~(scale * width / 2)
+                            , transform: hwaccel ? &apos;translate3d(0,0,0)&apos; : &apos;&apos;
+                            , opacity: opacity
+                            , animation: addAnimation(opacity, trail, start + i * direction, lines) + &apos; &apos; + 1 / speed + &apos;s linear infinite&apos;
+                            }
+      const fillStyle = { top: shadow ? 2 : 0
+                        , width: scale * (length + width)
+                        , height: scale * width + &apos;px&apos;
+                        , background: shadow ? &apos;#000&apos; : getColor(color, i)
+                        , boxShadow: shadow ? &apos;0 0 4px #000&apos; : &apos;0 0 1px rgba(0,0,0,.1)&apos;
+                        , transformOrigin: &apos;left&apos;
+                        , transform: &apos;rotate(&apos; + ~~(360/lines*i + rotate) + &apos;deg) translate(&apos; + scale*radius + &apos;px&apos; + &apos;,0)&apos;
+                        , borderRadius: (corners * scale * width &gt;&gt; 1) + &apos;px&apos;
+                        }
+
+      return &lt;Segment style={segmentStyle}&gt;&lt;Segment style={fillStyle} /&gt;&lt;/Segment&gt;
+    })
+    return &lt;div ref={x =&gt; this.container = x} style={style} role=&apos;progressbar&apos;&gt;{renderSegments()}&lt;/div&gt;
+  }
+}
+
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.6)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
