@@ -1,13 +1,17 @@
 {
-  "coverage": "50%",
-  "expectCount": 2,
+  "coverage": "16.66%",
+  "expectCount": 6,
   "actualCount": 1,
   "files": {
     "lib/components/Spinner.js": {
-      "expectCount": 2,
+      "expectCount": 6,
       "actualCount": 1,
       "undocumentLines": [
-        115
+        102,
+        105,
+        100,
+        109,
+        106
       ]
     }
   }

@@ -342,10 +342,34 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "lib/components/spinner.js~spinner#animations",
+    "class/lib/components/Spinner.js~Spinner.html#instance-member-animations",
+    "lib/components/Spinner.js~Spinner#animations",
+    "member"
+  ],
+  [
+    "lib/components/spinner.js~spinner#componentwillmount",
+    "class/lib/components/Spinner.js~Spinner.html#instance-method-componentWillMount",
+    "lib/components/Spinner.js~Spinner#componentWillMount",
+    "method"
+  ],
+  [
+    "lib/components/spinner.js~spinner#constructor",
+    "class/lib/components/Spinner.js~Spinner.html#instance-constructor-constructor",
+    "lib/components/Spinner.js~Spinner#constructor",
+    "method"
+  ],
+  [
     "lib/components/spinner.js~spinner#render",
     "class/lib/components/Spinner.js~Spinner.html#instance-method-render",
     "lib/components/Spinner.js~Spinner#render",
     "method"
+  ],
+  [
+    "lib/components/spinner.js~spinner#sheet",
+    "class/lib/components/Spinner.js~Spinner.html#instance-member-sheet",
+    "lib/components/Spinner.js~Spinner#sheet",
+    "member"
   ],
   [
     "lib/index.js",

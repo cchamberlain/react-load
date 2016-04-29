@@ -1,14 +1,14 @@
 {
   "type": "Program",
   "start": 0,
-  "end": 59,
+  "end": 68,
   "loc": {
     "start": {
       "line": 1,
       "column": 0
     },
     "end": {
-      "line": 4,
+      "line": 3,
       "column": 0
     }
   },
@@ -17,7 +17,7 @@
     {
       "type": "ImportDeclaration",
       "start": 0,
-      "end": 31,
+      "end": 42,
       "loc": {
         "start": {
           "line": 1,
@@ -25,7 +25,7 @@
         },
         "end": {
           "line": 1,
-          "column": 31
+          "column": 42
         }
       },
       "specifiers": [
@@ -65,7 +65,7 @@
       "source": {
         "type": "Literal",
         "start": 20,
-        "end": 31,
+        "end": 42,
         "loc": {
           "start": {
             "line": 1,
@@ -73,39 +73,39 @@
           },
           "end": {
             "line": 1,
-            "column": 31
+            "column": 42
           }
         },
-        "value": "./Spinner",
-        "rawValue": "./Spinner",
-        "raw": "'./Spinner'"
+        "value": "./components/Spinner",
+        "rawValue": "./components/Spinner",
+        "raw": "'./components/Spinner'"
       }
     },
     {
       "type": "ExportDefaultDeclaration",
-      "start": 35,
-      "end": 57,
+      "start": 44,
+      "end": 66,
       "loc": {
         "start": {
-          "line": 3,
+          "line": 2,
           "column": 0
         },
         "end": {
-          "line": 3,
+          "line": 2,
           "column": 22
         }
       },
       "declaration": {
         "type": "Identifier",
-        "start": 50,
-        "end": 57,
+        "start": 59,
+        "end": 66,
         "loc": {
           "start": {
-            "line": 3,
+            "line": 2,
             "column": 15
           },
           "end": {
-            "line": 3,
+            "line": 2,
             "column": 22
           }
         },
