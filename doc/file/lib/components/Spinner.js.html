@@ -76,32 +76,7 @@ import React, { Component, PropTypes } from &apos;react&apos;
 
 
 
-/**
- * Creates an opacity keyframe animation rule and returns its name.
- * Since most mobile Webkits have timing issues with animation-delay,
- * we create separate rules for each line/segment.
- */
-const addAnimation = (alpha, trail, i, lines) =&gt; {
-  var name = [&apos;opacity&apos;, trail, ~~(alpha * 100), i, lines].join(&apos;-&apos;)
-    , start = 0.01 + i/lines * 100
-    , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
-    , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf(&apos;Animation&apos;)).toLowerCase()
-    , pre = prefix &amp;&amp; &apos;-&apos; + prefix + &apos;-&apos; || &apos;&apos;
 
-  if (!animations[name]) {
-    sheet.insertRule(`
-@${pre}keyframes ${name}{
-0%{opacity:${z}}
-${start}%{opacity:${alpha}}
-${start+0.01}%{opacity:1}
-${(start+trail) % 100}%{opacity:${alpha}}
-100%{opacity:${z}}
-}`, sheet.cssRules.length)
-    animations[name] = 1
-  }
-
-  return name
-}
 
 
 /**
@@ -120,13 +95,24 @@ const opacity = (el, i, val) =&gt; {
 
 /** React component for segments */
 const Segment = props =&gt; {
-  const { style, children } = props
-  const segmentStyle = { ...style, position: &apos;absolute&apos; }
+  const { segmentStyle, fillStyle } = props
+  const commonStyle = { position: &apos;absolute&apos; }
   return (
-    &lt;div style={segmentStyle} children={children} /&gt;
+    &lt;div style={{ ...commonStyle, ...segmentStyle }}&gt;
+      &lt;div style={{ ...commonStyle, ...fillStyle }} /&gt;
+    &lt;/div&gt;
   )
 }
 
+
+const createSheet = () =&gt; {
+  if(typeof document === &apos;undefined&apos;)
+    return
+  let styleElement = document.createElement(&apos;style&apos;)
+  styleElement.type = &apos;text/css&apos;
+  document.head.appendChild(styleElement)
+  return styleElement.sheet
+}
 
 /** React component to show during loading */
 export default class Spinner extends Component {
@@ -151,6 +137,14 @@ export default class Spinner extends Component {
                         , hwaccel: false        // Whether to use hardware acceleration (might be buggy)
                         , position: &apos;absolute&apos;  // Element positioning
                         };
+  constructor(props) {
+    super(props)
+    this.animations = {}
+  }
+
+  componentWillMount() {
+    this.sheet = createSheet()
+  }
 
   render() {
     const { position
@@ -162,35 +156,71 @@ export default class Spinner extends Component {
           , scale
           , length
           , width
+          , speed
+          , radius
           , corners
           , rotate
           , opacity
+          , trail
           , color
           , shadow
+          , hwaccel
           } = this.props
-    const containerStyle = { width: 0, position, zIndex, left, top }
 
     let start = (lines - 1) * (1 - direction) / 2
 
-    const renderSegments = () =&gt; lines.map((x, i) =&gt; {
+    const renderSegments = () =&gt; [...new Array(lines).keys()].map(i =&gt; {
       const segmentStyle =  { top: 1 + ~(scale * width / 2)
-                            , transform: hwaccel ? &apos;translate3d(0,0,0)&apos; : &apos;&apos;
+                            //, transform: hwaccel ? &apos;translate3d(0,0,0)&apos; : &apos;&apos;
                             , opacity: opacity
-                            , animation: addAnimation(opacity, trail, start + i * direction, lines) + &apos; &apos; + 1 / speed + &apos;s linear infinite&apos;
+                            , animation: `${this.addAnimation(start + i * direction)} ${1 / speed}s linear infinite`
                             }
       const fillStyle = { top: shadow ? 2 : 0
                         , width: scale * (length + width)
-                        , height: scale * width + &apos;px&apos;
+                        , height: scale * width
                         , background: shadow ? &apos;#000&apos; : getColor(color, i)
                         , boxShadow: shadow ? &apos;0 0 4px #000&apos; : &apos;0 0 1px rgba(0,0,0,.1)&apos;
                         , transformOrigin: &apos;left&apos;
-                        , transform: &apos;rotate(&apos; + ~~(360/lines*i + rotate) + &apos;deg) translate(&apos; + scale*radius + &apos;px&apos; + &apos;,0)&apos;
-                        , borderRadius: (corners * scale * width &gt;&gt; 1) + &apos;px&apos;
+                        , transform: `rotate(${~~(360/lines*i + rotate)}deg) translate(${scale*radius}px,0)`
+                        , borderRadius: (corners * scale * width &gt;&gt; 1)
                         }
 
-      return &lt;Segment style={segmentStyle}&gt;&lt;Segment style={fillStyle} /&gt;&lt;/Segment&gt;
+      console.warn(&apos;segment&apos;, i, segmentStyle, fillStyle)
+      return &lt;Segment key={i} segmentStyle={segmentStyle} fillStyle={fillStyle} /&gt;
     })
-    return &lt;div ref={x =&gt; this.container = x} style={style} role=&apos;progressbar&apos;&gt;{renderSegments()}&lt;/div&gt;
+    const containerStyle = { width: 0, position, zIndex, left, top, backgroundColor: &apos;#f00&apos; }
+    return &lt;div style={containerStyle} role=&apos;progressbar&apos;&gt;{renderSegments()}&lt;/div&gt;
+  }
+
+  /**
+   * Creates an opacity keyframe animation rule and returns its name.
+   * Since most mobile Webkits have timing issues with animation-delay,
+   * we create separate rules for each line/segment.
+   */
+  addAnimation = i =&gt; {
+    const { opacity, trail, lines } = this.props
+    let name = [&apos;opacity&apos;, trail, ~~(opacity * 100), i, lines].join(&apos;-&apos;)
+    let start = 0.01 + i/lines * 100
+    let z = Math.max(1 - (1-opacity) / trail * (100-start), opacity)
+      //, prefix = useCssAnimations.substring(0, useCssAnimations.indexOf(&apos;Animation&apos;)).toLowerCase()
+      //, pre = prefix &amp;&amp; &apos;-&apos; + prefix + &apos;-&apos; || &apos;&apos;
+    let pre = &apos;&apos;
+
+    if(!this.sheet)
+      console.warn(&apos;Spinner =&gt; NO SHEET EXISTS&apos;)
+    else if (!this.animations[name]) {
+      this.sheet.insertRule(`
+  @${pre}keyframes ${name}{
+  0%{opacity:${z}}
+  ${start}%{opacity:${opacity}}
+  ${start+0.01}%{opacity:1}
+  ${(start+trail) % 100}%{opacity:${opacity}}
+  100%{opacity:${z}}
+  }`, this.sheet.cssRules.length)
+      this.animations[name] = 1
+    }
+
+    return name
   }
 }
 
