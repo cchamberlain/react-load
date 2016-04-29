@@ -1,0 +1,1 @@
+module.exports = require("npm:babel-helper-builder-react-jsx@6.7.5/lib/index.js");

@@ -1,0 +1,7 @@
+/* */ 
+"format esm";
+export default (function (obj) {
+  return obj && obj.__esModule ? obj : {
+    default: obj
+  };
+})
