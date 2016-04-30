@@ -1,9 +1,19 @@
-import Promise from 'bluebird'
-import System from 'systemjs'
 import createSpinner from './components/createSpinner'
 
-export default React => {
+const validate = dependencies => {
+  const { assert, Promise, System, React } = dependencies
+  if(!assert) throw new Error('dependency: must supply "assert" (chai.assert recommended)')
+  assert.ok(Promise, 'dependency: must supply "Promise" (bluebird recommended)')
+  assert.ok(System, 'dependency: must supply "System" loader (systemjs / jspm)')
+  assert.ok(React, 'dependency: must supply "React"')
+  return { assert, Promise, System, React }
+}
+
+export default dependencies => {
+  const { assert, Promise, System, React } = validate(dependencies)
+
   const { Component, PropTypes } = React
+  assert
   const IS_BROWSER = typeof window === 'object'
 
   const Spinner = createSpinner(React)
@@ -21,11 +31,7 @@ export default React => {
     static defaultProps = { transpiler: 'plugin-babel'
                           , depCache: {}
                           , meta: { format: 'esm'
-                                  , '*.js': { babelOptions: { presets:  [ 'react'
-                                                                        , 'es2015'
-                                                                        , 'stage-0'
-                                                                        ]
-                                                            , plugins: [ 'babel-plugin-transform-react-jsx' ]
+                                  , '*.js': { babelOptions: { presets:  [ 'stage-0' ]
                                                             }
                                             }
                                   }
@@ -35,7 +41,35 @@ export default React => {
                           , renderFactory: Modules => props => {
                               const names = Object.keys(Modules)
                               if(names.length === 0)
-                                return <div style={{ color: '#f00' }}>No module specified to load.</div>
+                                return (
+                                  <div style={{ color: '#f00', textAlign: 'center' }}>
+                                    <h2>react-load: must specify a module to load.</h2>
+                                    <div style={{marginLeft: '10%', marginRight: '10%', textAlign: 'left'}}>
+                                      <code><pre>
+                                      {`
+import { assert } from 'chai'
+import Promise from 'bluebird'
+import System from 'systemjs'
+import React from 'react'
+import ReactLoad from 'react-load'
+
+const Load = ReactLoad({ assert, Promise, System, React })
+
+export default props => (
+  <Load
+      universalImports={{_: 'lodash'}}
+      serverImports={{fs: 'fs'}}
+      browserImports={{$: 'jquery'}}
+      renderFactory={({_, fs, $}) => /* continuation logic */ }
+  />
+)
+
+                                      `}
+                                      </pre></code>
+                                    </div>
+                                    <Spinner color="#f00" />
+                                  </div>
+                                  )
                               if(names.length === 1) {
                                 const Module = Modules[names[0]]
                                 return <Module {...props} />
@@ -61,7 +95,7 @@ export default React => {
     }
     componentWillMount() {
       const { transpiler, meta, depCache, universalImports, renderFactory } = this.props
-      System.config({ transpiler, meta, depCache })
+      //System.config({ transpiler, meta, depCache })
 
       const browserImports = IS_BROWSER ? this.props.browserImports : {}
       const serverImports = IS_BROWSER ? {} : this.props.serverImports
@@ -71,8 +105,9 @@ export default React => {
       console.warn('IMPORTS', imports)
 
       Promise.all(Object.keys(imports)
-                        .map(x => System.import(x))
-                        .then(Module => ({ [x]: Module })))
+                        .map(x => System.import(imports[x])
+                                        .then(Module => ({ [x]: Module }))
+                            ))
               .then(modules => this.setState({ Modules: modules.reduce((Modules, Module) => ({ ...Modules, ...Module }), {})
                                               }))
     }

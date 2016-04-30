@@ -5,7 +5,6 @@
   "main": "lib/index.js",
   "files": [
     "lib",
-    "src",
     "doc"
   ],
   "scripts": {
@@ -21,7 +20,19 @@
     "release-doc": "git subtree push --prefix doc origin gh-pages",
     "postrelease-doc": "git commit -am \"doc-release\" && git push --follow-tags",
     "upgrade": "ncu -a && npm update",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"who needs tests when you put asserts everywhere\" && exit 1"
+  },
+  "dependencies": {
+    "chai": "^3.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0",
+    "babel-preset-es2015": "^6.0.0",
+    "babel-preset-react": "^6.0.0",
+    "babel-preset-stage-0": "^6.0.0",
+    "esdoc": "^0.4.6",
+    "esdoc-es7-plugin": "0.0.3",
+    "rimraf": "^2.5.2"
   },
   "repository": {
     "type": "git",
@@ -61,12 +72,6 @@
   "jspm": {
     "dependencies": {
       "plugin-babel": "npm:systemjs-plugin-babel@^0.0.9"
-    },
-    "devDependencies": {
-      "babel": "npm:babel-core@^5.8.24",
-      "babel-plugin-transform-react-jsx": "npm:babel-plugin-transform-react-jsx@^6.7.5",
-      "babel-runtime": "npm:babel-runtime@^5.8.24",
-      "core-js": "npm:core-js@^2.3.0"
     }
   }
 }
