@@ -60,7 +60,6 @@
     "babel-preset-stage-0": "^6.5.0",
     "esdoc": "^0.4.6",
     "esdoc-es7-plugin": "0.0.3",
-    "jspm": "^0.16.33",
     "rimraf": "^2.5.2"
   },
   "author": "Cole Chamberlain <cole.chamberlain@gmail.com> (https://github.com/cchamberlain)",
@@ -68,10 +67,5 @@
   "bugs": {
     "url": "https://github.com/cchamberlain/react-load/issues"
   },
-  "homepage": "https://react-load.js.org",
-  "jspm": {
-    "dependencies": {
-      "plugin-babel": "npm:systemjs-plugin-babel@^0.0.9"
-    }
-  }
+  "homepage": "https://react-load.js.org"
 }
