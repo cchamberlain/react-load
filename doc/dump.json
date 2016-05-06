@@ -4,209 +4,16 @@
     "kind": "file",
     "static": true,
     "variation": null,
-    "name": "lib/components/Spinner.js",
+    "name": "lib/components/createSpinner.js",
     "memberof": null,
-    "longname": "lib/components/Spinner.js",
+    "longname": "lib/components/createSpinner.js",
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "/**\r\n * Copyright (c) 2011-2014 Felix Gnass\r\n * Licensed under the MIT license\r\n * http://spin.js.org/\r\n * ES6ified by Cole Chamberlain\r\n *\r\n * Example:\r\n    var opts = {\r\n      lines: 12             // The number of lines to draw\r\n    , length: 7             // The length of each line\r\n    , width: 5              // The line thickness\r\n    , radius: 10            // The radius of the inner circle\r\n    , scale: 1.0            // Scales overall size of the spinner\r\n    , corners: 1            // Roundness (0..1)\r\n    , color: '#000'         // #rgb or #rrggbb\r\n    , opacity: 1/4          // Opacity of the lines\r\n    , rotate: 0             // Rotation offset\r\n    , direction: 1          // 1: clockwise, -1: counterclockwise\r\n    , speed: 1              // Rounds per second\r\n    , trail: 100            // Afterglow percentage\r\n    , fps: 20               // Frames per second when using setTimeout()\r\n    , zIndex: 2e9           // Use a high z-index by default\r\n    , className: 'spinner'  // CSS class to assign to the element\r\n    , top: '50%'            // center vertically\r\n    , left: '50%'           // center horizontally\r\n    , shadow: false         // Whether to render a shadow\r\n    , hwaccel: false        // Whether to use hardware acceleration (might be buggy)\r\n    , position: 'absolute'  // Element positioning\r\n    }\r\n    var target = document.getElementById('foo')\r\n    var spinner = new Spinner(opts).spin(target)\r\n */\r\n\r\nimport React, { Component, PropTypes } from 'react'\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n/**\r\n * Returns the line color from the given string or array.\r\n */\r\nconst getColor = (color, idx) => typeof color == 'string' ? color : color[idx % color.length]\r\n\r\n  /**\r\n   * Internal method that adjusts the opacity of a single line.\r\n   * Will be overwritten in VML fallback mode below.\r\n   */\r\nconst opacity = (el, i, val) => {\r\n  if (i < el.childNodes.length) el.childNodes[i].style.opacity = val\r\n}\r\n\r\n\r\n/** React component for segments */\r\nconst Segment = props => {\r\n  const { segmentStyle, fillStyle } = props\r\n  const commonStyle = { position: 'absolute' }\r\n  return (\r\n    <div style={{ ...commonStyle, ...segmentStyle }}>\r\n      <div style={{ ...commonStyle, ...fillStyle }} />\r\n    </div>\r\n  )\r\n}\r\n\r\n\r\nconst createSheet = () => {\r\n  if(typeof document === 'undefined')\r\n    return\r\n  let styleElement = document.createElement('style')\r\n  styleElement.type = 'text/css'\r\n  document.head.appendChild(styleElement)\r\n  return styleElement.sheet\r\n}\r\n\r\n/** React component to show during loading */\r\nexport default class Spinner extends Component {\r\n  static defaultProps = { lines: 14             // The number of lines to draw\r\n                        , length: 12            // The length of each line\r\n                        , width: 8              // The line thickness\r\n                        , radius: 20            // The radius of the inner circle\r\n                        , scale: 1.0            // Scales overall size of the spinner\r\n                        , corners: 1            // Roundness (0..1)\r\n                        , color: '#f2c73d'      // #rgb or #rrggbb\r\n                        , opacity: 1/4          // Opacity of the lines\r\n                        , rotate: 0             // Rotation offset\r\n                        , direction: 1          // 1: clockwise, -1: counterclockwise\r\n                        , speed: 1              // Rounds per second\r\n                        , trail: 100            // Afterglow percentage\r\n                        , fps: 20               // Frames per second when using setTimeout()\r\n                        , zIndex: 2e9           // Use a high z-index by default\r\n                        , className: 'spinner'  // CSS class to assign to the element\r\n                        , top: '50%'            // center vertically\r\n                        , left: '50%'           // center horizontally\r\n                        , shadow: false         // Whether to render a shadow\r\n                        , hwaccel: false        // Whether to use hardware acceleration (might be buggy)\r\n                        , position: 'absolute'  // Element positioning\r\n                        };\r\n  constructor(props) {\r\n    super(props)\r\n    this.animations = {}\r\n  }\r\n\r\n  componentWillMount() {\r\n    this.sheet = createSheet()\r\n  }\r\n\r\n  render() {\r\n    const { position\r\n          , zIndex\r\n          , left\r\n          , top\r\n          , lines\r\n          , direction\r\n          , scale\r\n          , length\r\n          , width\r\n          , speed\r\n          , radius\r\n          , corners\r\n          , rotate\r\n          , opacity\r\n          , trail\r\n          , color\r\n          , shadow\r\n          , hwaccel\r\n          } = this.props\r\n\r\n    let start = (lines - 1) * (1 - direction) / 2\r\n\r\n    const renderSegments = () => [...new Array(lines).keys()].map(i => {\r\n      const segmentStyle =  { top: 1 + ~(scale * width / 2)\r\n                            //, transform: hwaccel ? 'translate3d(0,0,0)' : ''\r\n                            , opacity: opacity\r\n                            , animation: `${this.addAnimation(start + i * direction)} ${1 / speed}s linear infinite`\r\n                            }\r\n      const fillStyle = { top: shadow ? 2 : 0\r\n                        , width: scale * (length + width)\r\n                        , height: scale * width\r\n                        , background: shadow ? '#000' : getColor(color, i)\r\n                        , boxShadow: shadow ? '0 0 4px #000' : '0 0 1px rgba(0,0,0,.1)'\r\n                        , transformOrigin: 'left'\r\n                        , transform: `rotate(${~~(360/lines*i + rotate)}deg) translate(${scale*radius}px,0)`\r\n                        , borderRadius: (corners * scale * width >> 1)\r\n                        }\r\n\r\n      console.warn('segment', i, segmentStyle, fillStyle)\r\n      return <Segment key={i} segmentStyle={segmentStyle} fillStyle={fillStyle} />\r\n    })\r\n    const containerStyle = { width: 0, position, zIndex, left, top, backgroundColor: '#f00' }\r\n    return <div style={containerStyle} role='progressbar'>{renderSegments()}</div>\r\n  }\r\n\r\n  /**\r\n   * Creates an opacity keyframe animation rule and returns its name.\r\n   * Since most mobile Webkits have timing issues with animation-delay,\r\n   * we create separate rules for each line/segment.\r\n   */\r\n  addAnimation = i => {\r\n    const { opacity, trail, lines } = this.props\r\n    let name = ['opacity', trail, ~~(opacity * 100), i, lines].join('-')\r\n    let start = 0.01 + i/lines * 100\r\n    let z = Math.max(1 - (1-opacity) / trail * (100-start), opacity)\r\n      //, prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()\r\n      //, pre = prefix && '-' + prefix + '-' || ''\r\n    let pre = ''\r\n\r\n    if(!this.sheet)\r\n      console.warn('Spinner => NO SHEET EXISTS')\r\n    else if (!this.animations[name]) {\r\n      this.sheet.insertRule(`\r\n  @${pre}keyframes ${name}{\r\n  0%{opacity:${z}}\r\n  ${start}%{opacity:${opacity}}\r\n  ${start+0.01}%{opacity:1}\r\n  ${(start+trail) % 100}%{opacity:${opacity}}\r\n  100%{opacity:${z}}\r\n  }`, this.sheet.cssRules.length)\r\n      this.animations[name] = 1\r\n    }\r\n\r\n    return name\r\n  }\r\n}\r\n\r\n"
+    "content": "/**\r\n * Copyright (c) 2011-2014 Felix Gnass\r\n * Licensed under the MIT license\r\n * http://spin.js.org/\r\n * ES6ified by Cole Chamberlain\r\n *\r\n * Example:\r\n    var opts = {\r\n      lines: 12             // The number of lines to draw\r\n    , length: 7             // The length of each line\r\n    , width: 5              // The line thickness\r\n    , radius: 10            // The radius of the inner circle\r\n    , scale: 1.0            // Scales overall size of the spinner\r\n    , corners: 1            // Roundness (0..1)\r\n    , color: '#000'         // #rgb or #rrggbb\r\n    , opacity: 1/4          // Opacity of the lines\r\n    , rotate: 0             // Rotation offset\r\n    , direction: 1          // 1: clockwise, -1: counterclockwise\r\n    , speed: 1              // Rounds per second\r\n    , trail: 100            // Afterglow percentage\r\n    , fps: 20               // Frames per second when using setTimeout()\r\n    , zIndex: 2e9           // Use a high z-index by default\r\n    , className: 'spinner'  // CSS class to assign to the element\r\n    , top: '50%'            // center vertically\r\n    , left: '50%'           // center horizontally\r\n    , shadow: false         // Whether to render a shadow\r\n    , hwaccel: false        // Whether to use hardware acceleration (might be buggy)\r\n    , position: 'absolute'  // Element positioning\r\n    }\r\n    var target = document.getElementById('foo')\r\n    var spinner = new Spinner(opts).spin(target)\r\n */\r\n\r\nexport default React => {\r\n  const { Component, PropTypes } = React\r\n\r\n  /**\r\n   * Returns the line color from the given string or array.\r\n   */\r\n  const getColor = (color, idx) => typeof color == 'string' ? color : color[idx % color.length]\r\n\r\n    /**\r\n     * Internal method that adjusts the opacity of a single line.\r\n     * Will be overwritten in VML fallback mode below.\r\n     */\r\n  const opacity = (el, i, val) => {\r\n    if (i < el.childNodes.length) el.childNodes[i].style.opacity = val\r\n  }\r\n\r\n\r\n  /** React component for segments */\r\n  const Segment = props => {\r\n    const { segmentStyle, fillStyle } = props\r\n    const commonStyle = { position: 'absolute' }\r\n    return (\r\n      <div style={{ ...commonStyle, ...segmentStyle }}>\r\n        <div style={{ ...commonStyle, ...fillStyle }} />\r\n      </div>\r\n    )\r\n  }\r\n\r\n\r\n  const createSheet = () => {\r\n    if(typeof document === 'undefined')\r\n      return\r\n    let styleElement = document.createElement('style')\r\n    styleElement.type = 'text/css'\r\n    document.head.appendChild(styleElement)\r\n    return styleElement.sheet\r\n  }\r\n\r\n/** React component to show during loading */\r\n\r\n  return class Spinner extends Component {\r\n    static defaultProps = { lines: 14             // The number of lines to draw\r\n                          , length: 12            // The length of each line\r\n                          , width: 8              // The line thickness\r\n                          , radius: 20            // The radius of the inner circle\r\n                          , scale: 1.0            // Scales overall size of the spinner\r\n                          , corners: 1            // Roundness (0..1)\r\n                          , color: '#f2c73d'      // #rgb or #rrggbb\r\n                          , opacity: 1/4          // Opacity of the lines\r\n                          , rotate: 0             // Rotation offset\r\n                          , direction: 1          // 1: clockwise, -1: counterclockwise\r\n                          , speed: 1              // Rounds per second\r\n                          , trail: 100            // Afterglow percentage\r\n                          , fps: 20               // Frames per second when using setTimeout()\r\n                          , zIndex: 2e9           // Use a high z-index by default\r\n                          , className: 'spinner'  // CSS class to assign to the element\r\n                          , top: '50%'            // center vertically\r\n                          , left: '50%'           // center horizontally\r\n                          , shadow: false         // Whether to render a shadow\r\n                          , hwaccel: false        // Whether to use hardware acceleration (might be buggy)\r\n                          , position: 'absolute'  // Element positioning\r\n                          };\r\n    componentWillMount() {\r\n      this.animations = {}\r\n      this.sheet = createSheet()\r\n    }\r\n\r\n    render() {\r\n      const { position\r\n            , zIndex\r\n            , left\r\n            , top\r\n            , lines\r\n            , direction\r\n            , scale\r\n            , length\r\n            , width\r\n            , speed\r\n            , radius\r\n            , corners\r\n            , rotate\r\n            , opacity\r\n            , trail\r\n            , color\r\n            , shadow\r\n            , hwaccel\r\n            } = this.props\r\n\r\n      let start = (lines - 1) * (1 - direction) / 2\r\n\r\n      const renderSegments = () => [...new Array(lines).keys()].map(i => {\r\n        const segmentStyle =  { top: 1 + ~(scale * width / 2)\r\n                              //, transform: hwaccel ? 'translate3d(0,0,0)' : ''\r\n                              , opacity: opacity\r\n                              , animation: `${this.addAnimation(start + i * direction)} ${1 / speed}s linear infinite`\r\n                              }\r\n        const fillStyle = { top: shadow ? 2 : 0\r\n                          , width: scale * (length + width)\r\n                          , height: scale * width\r\n                          , background: shadow ? '#000' : getColor(color, i)\r\n                          , boxShadow: shadow ? '0 0 4px #000' : '0 0 1px rgba(0,0,0,.1)'\r\n                          , transformOrigin: 'left'\r\n                          , transform: `rotate(${~~(360/lines*i + rotate)}deg) translate(${scale*radius}px,0)`\r\n                          , borderRadius: (corners * scale * width >> 1)\r\n                          }\r\n\r\n        console.warn('segment', i, segmentStyle, fillStyle)\r\n        return <Segment key={i} segmentStyle={segmentStyle} fillStyle={fillStyle} />\r\n      })\r\n      const containerStyle = { width: 0, position, zIndex, left, top, backgroundColor: '#f00' }\r\n      return <div style={containerStyle} role='progressbar'>{renderSegments()}</div>\r\n    }\r\n\r\n    /**\r\n     * Creates an opacity keyframe animation rule and returns its name.\r\n     * Since most mobile Webkits have timing issues with animation-delay,\r\n     * we create separate rules for each line/segment.\r\n     */\r\n    addAnimation = i => {\r\n      const { opacity, trail, lines } = this.props\r\n      let name = ['opacity', trail, ~~(opacity * 100), i, lines].join('-')\r\n      let start = 0.01 + i/lines * 100\r\n      let z = Math.max(1 - (1-opacity) / trail * (100-start), opacity)\r\n        //, prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()\r\n        //, pre = prefix && '-' + prefix + '-' || ''\r\n      let pre = ''\r\n\r\n      if(!this.sheet)\r\n        console.warn('Spinner => NO SHEET EXISTS')\r\n      else if (!this.animations[name]) {\r\n        this.sheet.insertRule(`\r\n    @${pre}keyframes ${name}{\r\n    0%{opacity:${z}}\r\n    ${start}%{opacity:${opacity}}\r\n    ${start+0.01}%{opacity:1}\r\n    ${(start+trail) % 100}%{opacity:${opacity}}\r\n    100%{opacity:${z}}\r\n    }`, this.sheet.cssRules.length)\r\n        this.animations[name] = 1\r\n      }\r\n\r\n      return name\r\n    }\r\n  }\r\n}\r\n\r\n"
   },
   {
     "__docId__": 1,
-    "kind": "variable",
-    "static": true,
-    "variation": null,
-    "name": "getColor",
-    "memberof": "lib/components/Spinner.js",
-    "longname": "lib/components/Spinner.js~getColor",
-    "access": null,
-    "export": false,
-    "importPath": "react-load/lib/components/Spinner.js",
-    "importStyle": null,
-    "description": "Returns the line color from the given string or array.",
-    "lineNumber": 45,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 2,
-    "kind": "variable",
-    "static": true,
-    "variation": null,
-    "name": "opacity",
-    "memberof": "lib/components/Spinner.js",
-    "longname": "lib/components/Spinner.js~opacity",
-    "access": null,
-    "export": false,
-    "importPath": "react-load/lib/components/Spinner.js",
-    "importStyle": null,
-    "description": "Internal method that adjusts the opacity of a single line.\nWill be overwritten in VML fallback mode below.",
-    "lineNumber": 51,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 3,
-    "kind": "variable",
-    "static": true,
-    "variation": null,
-    "name": "Segment",
-    "memberof": "lib/components/Spinner.js",
-    "longname": "lib/components/Spinner.js~Segment",
-    "access": null,
-    "export": false,
-    "importPath": "react-load/lib/components/Spinner.js",
-    "importStyle": null,
-    "description": "React component for segments",
-    "lineNumber": 57,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 4,
-    "kind": "variable",
-    "static": true,
-    "variation": null,
-    "name": "createSheet",
-    "memberof": "lib/components/Spinner.js",
-    "longname": "lib/components/Spinner.js~createSheet",
-    "access": null,
-    "export": false,
-    "importPath": "react-load/lib/components/Spinner.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 68,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 5,
-    "kind": "class",
-    "static": true,
-    "variation": null,
-    "name": "Spinner",
-    "memberof": "lib/components/Spinner.js",
-    "longname": "lib/components/Spinner.js~Spinner",
-    "access": null,
-    "export": true,
-    "importPath": "react-load/lib/components/Spinner.js",
-    "importStyle": "Spinner",
-    "description": "React component to show during loading",
-    "lineNumber": 78,
-    "interface": false,
-    "extends": [
-      "react~Component"
-    ]
-  },
-  {
-    "__docId__": 6,
-    "kind": "constructor",
-    "static": false,
-    "variation": null,
-    "name": "constructor",
-    "memberof": "lib/components/Spinner.js~Spinner",
-    "longname": "lib/components/Spinner.js~Spinner#constructor",
-    "access": null,
-    "description": null,
-    "lineNumber": 100,
-    "undocument": true,
-    "params": [
-      {
-        "name": "props",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "generator": false
-  },
-  {
-    "__docId__": 7,
-    "kind": "member",
-    "static": false,
-    "variation": null,
-    "name": "animations",
-    "memberof": "lib/components/Spinner.js~Spinner",
-    "longname": "lib/components/Spinner.js~Spinner#animations",
-    "access": null,
-    "description": null,
-    "lineNumber": 102,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 8,
-    "kind": "method",
-    "static": false,
-    "variation": null,
-    "name": "componentWillMount",
-    "memberof": "lib/components/Spinner.js~Spinner",
-    "longname": "lib/components/Spinner.js~Spinner#componentWillMount",
-    "access": null,
-    "description": null,
-    "lineNumber": 105,
-    "undocument": true,
-    "params": [],
-    "generator": false
-  },
-  {
-    "__docId__": 9,
-    "kind": "member",
-    "static": false,
-    "variation": null,
-    "name": "sheet",
-    "memberof": "lib/components/Spinner.js~Spinner",
-    "longname": "lib/components/Spinner.js~Spinner#sheet",
-    "access": null,
-    "description": null,
-    "lineNumber": 106,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 10,
-    "kind": "method",
-    "static": false,
-    "variation": null,
-    "name": "render",
-    "memberof": "lib/components/Spinner.js~Spinner",
-    "longname": "lib/components/Spinner.js~Spinner#render",
-    "access": null,
-    "description": null,
-    "lineNumber": 109,
-    "undocument": true,
-    "params": [],
-    "return": {
-      "types": [
-        "*"
-      ]
-    },
-    "generator": false
-  },
-  {
-    "__docId__": 11,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -216,10 +23,31 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import Spinner from './components/Spinner'\r\nexport default Spinner\r\n"
+    "content": "import createSpinner from './components/createSpinner'\r\n\r\nconst validate = dependencies => {\r\n  const { assert, Promise, System, React } = dependencies\r\n  if(!assert) throw new Error('dependency: must supply \"assert\" (chai.assert recommended)')\r\n  assert.ok(Promise, 'dependency: must supply \"Promise\" (bluebird recommended)')\r\n  assert.ok(System, 'dependency: must supply \"System\" loader (systemjs / jspm)')\r\n  assert.ok(React, 'dependency: must supply \"React\"')\r\n  return { assert, Promise, System, React }\r\n}\r\n\r\nexport default dependencies => {\r\n  const { assert, Promise, System, React } = validate(dependencies)\r\n\r\n  const { Component, PropTypes } = React\r\n  assert\r\n  const IS_BROWSER = typeof window === 'object'\r\n\r\n  const Spinner = createSpinner(React)\r\n\r\n  return class Load extends Component {\r\n    static propTypes =  { transpiler: PropTypes.string.isRequired\r\n                        , depCache: PropTypes.object.isRequired\r\n                        , meta: PropTypes.object.isRequired\r\n                        , universalImports: PropTypes.object.isRequired\r\n                        , serverImports: PropTypes.object.isRequired\r\n                        , browserImports: PropTypes.object.isRequired\r\n                        , renderFactory: PropTypes.func.isRequired\r\n                        , moduleProps: PropTypes.object\r\n                        };\r\n    static defaultProps = { transpiler: 'plugin-babel'\r\n                          , depCache: {}\r\n                          , meta: { format: 'esm'\r\n                                  , '*.js': { babelOptions: { presets:  [ 'stage-0' ]\r\n                                                            }\r\n                                            }\r\n                                  }\r\n                          , universalImports: {}\r\n                          , serverImports: {}\r\n                          , browserImports: {}\r\n                          , renderFactory: Modules => props => {\r\n                              const names = Object.keys(Modules)\r\n                              if(names.length === 0)\r\n                                return (\r\n                                  <div style={{ color: '#f00', textAlign: 'center' }}>\r\n                                    <h2>react-load: must specify a module to load.</h2>\r\n                                    <div style={{marginLeft: '10%', marginRight: '10%', textAlign: 'left'}}>\r\n                                      <code><pre>\r\n                                      {`\r\nimport { assert } from 'chai'\r\nimport Promise from 'bluebird'\r\nimport System from 'systemjs'\r\nimport React from 'react'\r\nimport ReactLoad from 'react-load'\r\n\r\nconst Load = ReactLoad({ assert, Promise, System, React })\r\n\r\nexport default props => (\r\n  <Load\r\n      universalImports={{_: 'lodash'}}\r\n      serverImports={{fs: 'fs'}}\r\n      browserImports={{$: 'jquery'}}\r\n      renderFactory={({_, fs, $}) => /* continuation logic */ }\r\n  />\r\n)\r\n\r\n                                      `}\r\n                                      </pre></code>\r\n                                    </div>\r\n                                    <Spinner color=\"#f00\" />\r\n                                  </div>\r\n                                  )\r\n                              if(names.length === 1) {\r\n                                const Module = Modules[names[0]]\r\n                                return <Module {...props} />\r\n                              }\r\n                              return <div>{Modules.map((Module, i) => <Module {...props} key={i} />)}</div>\r\n                            }\r\n                          , moduleProps: {}\r\n                          };\r\n    constructor(props) {\r\n      super(props)\r\n      // TODO: Offer redux option in future\r\n      this.state =  { Modules: null }\r\n    }\r\n    render() {\r\n      const { Modules } = this.state\r\n      if(!Modules)\r\n        return <Spinner />\r\n\r\n      const { renderFactory, moduleProps } = this.props\r\n\r\n      const Module = renderFactory(Modules)\r\n      return <Module {...moduleProps} />\r\n    }\r\n    componentWillMount() {\r\n      const { transpiler, meta, depCache, universalImports, renderFactory } = this.props\r\n      //System.config({ transpiler, meta, depCache })\r\n\r\n      const browserImports = IS_BROWSER ? this.props.browserImports : {}\r\n      const serverImports = IS_BROWSER ? {} : this.props.serverImports\r\n\r\n      const imports = { ...universalImports, ...serverImports, ...browserImports }\r\n      //const imports = Array.from(new Set([ ...importsUniversal, ...(IS_BROWSER ? [] : importsServer), ...(IS_BROWSER ? importsBrowser : []) ]))\r\n      console.warn('IMPORTS', imports)\r\n\r\n      Promise.all(Object.keys(imports)\r\n                        .map(x => System.import(imports[x])\r\n                                        .then(Module => ({ [x]: Module }))\r\n                            ))\r\n              .then(modules => this.setState({ Modules: modules.reduce((Modules, Module) => ({ ...Modules, ...Module }), {})\r\n                                              }))\r\n    }\r\n  }\r\n}\r\n"
   },
   {
-    "__docId__": 13,
+    "__docId__": 2,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "validate",
+    "memberof": "lib/index.js",
+    "longname": "lib/index.js~validate",
+    "access": null,
+    "export": false,
+    "importPath": "react-load",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 4,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -232,7 +60,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 14,
+    "__docId__": 5,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -245,7 +73,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 15,
+    "__docId__": 6,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -258,7 +86,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 16,
+    "__docId__": 7,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -271,7 +99,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 17,
+    "__docId__": 8,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -284,7 +112,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 18,
+    "__docId__": 9,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -297,7 +125,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 19,
+    "__docId__": 10,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -310,7 +138,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 20,
+    "__docId__": 11,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -323,7 +151,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 21,
+    "__docId__": 12,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -336,7 +164,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 22,
+    "__docId__": 13,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -349,7 +177,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 23,
+    "__docId__": 14,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -362,7 +190,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 24,
+    "__docId__": 15,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -375,7 +203,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 25,
+    "__docId__": 16,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -388,7 +216,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 26,
+    "__docId__": 17,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -401,7 +229,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 27,
+    "__docId__": 18,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -414,7 +242,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 28,
+    "__docId__": 19,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -427,7 +255,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 29,
+    "__docId__": 20,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -440,7 +268,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 30,
+    "__docId__": 21,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -453,7 +281,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 31,
+    "__docId__": 22,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -466,7 +294,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 32,
+    "__docId__": 23,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -479,7 +307,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 33,
+    "__docId__": 24,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -492,7 +320,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 34,
+    "__docId__": 25,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -505,7 +333,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 35,
+    "__docId__": 26,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -518,7 +346,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 36,
+    "__docId__": 27,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -531,7 +359,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 37,
+    "__docId__": 28,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -544,7 +372,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 38,
+    "__docId__": 29,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -557,7 +385,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 39,
+    "__docId__": 30,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -570,7 +398,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 40,
+    "__docId__": 31,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -583,7 +411,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 41,
+    "__docId__": 32,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -596,7 +424,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 42,
+    "__docId__": 33,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -609,7 +437,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 43,
+    "__docId__": 34,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -622,7 +450,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 44,
+    "__docId__": 35,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -635,7 +463,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 45,
+    "__docId__": 36,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -648,7 +476,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 37,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -661,7 +489,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 38,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -674,7 +502,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 39,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -687,7 +515,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 40,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -700,7 +528,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 41,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -713,7 +541,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 42,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -726,7 +554,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 43,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -739,7 +567,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 44,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -752,7 +580,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 45,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -765,7 +593,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 46,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -778,7 +606,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 47,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -791,7 +619,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 48,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -804,7 +632,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 49,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -817,7 +645,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 50,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -830,7 +658,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -843,7 +671,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 53,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -856,7 +684,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 54,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -869,7 +697,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 55,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -882,7 +710,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 56,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -895,7 +723,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 57,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -908,7 +736,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -921,7 +749,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,

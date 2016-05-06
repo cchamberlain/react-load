@@ -32,14 +32,126 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">components</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/components/Spinner.js~Spinner.html">Spinner</a></span></span></li>
-</ul>
+  </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">lib/index.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import Spinner from &apos;./components/Spinner&apos;
-export default Spinner
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import createSpinner from &apos;./components/createSpinner&apos;
+
+const validate = dependencies =&gt; {
+  const { assert, Promise, System, React } = dependencies
+  if(!assert) throw new Error(&apos;dependency: must supply &quot;assert&quot; (chai.assert recommended)&apos;)
+  assert.ok(Promise, &apos;dependency: must supply &quot;Promise&quot; (bluebird recommended)&apos;)
+  assert.ok(System, &apos;dependency: must supply &quot;System&quot; loader (systemjs / jspm)&apos;)
+  assert.ok(React, &apos;dependency: must supply &quot;React&quot;&apos;)
+  return { assert, Promise, System, React }
+}
+
+export default dependencies =&gt; {
+  const { assert, Promise, System, React } = validate(dependencies)
+
+  const { Component, PropTypes } = React
+  assert
+  const IS_BROWSER = typeof window === &apos;object&apos;
+
+  const Spinner = createSpinner(React)
+
+  return class Load extends Component {
+    static propTypes =  { transpiler: PropTypes.string.isRequired
+                        , depCache: PropTypes.object.isRequired
+                        , meta: PropTypes.object.isRequired
+                        , universalImports: PropTypes.object.isRequired
+                        , serverImports: PropTypes.object.isRequired
+                        , browserImports: PropTypes.object.isRequired
+                        , renderFactory: PropTypes.func.isRequired
+                        , moduleProps: PropTypes.object
+                        };
+    static defaultProps = { transpiler: &apos;plugin-babel&apos;
+                          , depCache: {}
+                          , meta: { format: &apos;esm&apos;
+                                  , &apos;*.js&apos;: { babelOptions: { presets:  [ &apos;stage-0&apos; ]
+                                                            }
+                                            }
+                                  }
+                          , universalImports: {}
+                          , serverImports: {}
+                          , browserImports: {}
+                          , renderFactory: Modules =&gt; props =&gt; {
+                              const names = Object.keys(Modules)
+                              if(names.length === 0)
+                                return (
+                                  &lt;div style={{ color: &apos;#f00&apos;, textAlign: &apos;center&apos; }}&gt;
+                                    &lt;h2&gt;react-load: must specify a module to load.&lt;/h2&gt;
+                                    &lt;div style={{marginLeft: &apos;10%&apos;, marginRight: &apos;10%&apos;, textAlign: &apos;left&apos;}}&gt;
+                                      &lt;code&gt;&lt;pre&gt;
+                                      {`
+import { assert } from &apos;chai&apos;
+import Promise from &apos;bluebird&apos;
+import System from &apos;systemjs&apos;
+import React from &apos;react&apos;
+import ReactLoad from &apos;react-load&apos;
+
+const Load = ReactLoad({ assert, Promise, System, React })
+
+export default props =&gt; (
+  &lt;Load
+      universalImports={{_: &apos;lodash&apos;}}
+      serverImports={{fs: &apos;fs&apos;}}
+      browserImports={{$: &apos;jquery&apos;}}
+      renderFactory={({_, fs, $}) =&gt; /* continuation logic */ }
+  /&gt;
+)
+
+                                      `}
+                                      &lt;/pre&gt;&lt;/code&gt;
+                                    &lt;/div&gt;
+                                    &lt;Spinner color=&quot;#f00&quot; /&gt;
+                                  &lt;/div&gt;
+                                  )
+                              if(names.length === 1) {
+                                const Module = Modules[names[0]]
+                                return &lt;Module {...props} /&gt;
+                              }
+                              return &lt;div&gt;{Modules.map((Module, i) =&gt; &lt;Module {...props} key={i} /&gt;)}&lt;/div&gt;
+                            }
+                          , moduleProps: {}
+                          };
+    constructor(props) {
+      super(props)
+      // TODO: Offer redux option in future
+      this.state =  { Modules: null }
+    }
+    render() {
+      const { Modules } = this.state
+      if(!Modules)
+        return &lt;Spinner /&gt;
+
+      const { renderFactory, moduleProps } = this.props
+
+      const Module = renderFactory(Modules)
+      return &lt;Module {...moduleProps} /&gt;
+    }
+    componentWillMount() {
+      const { transpiler, meta, depCache, universalImports, renderFactory } = this.props
+      //System.config({ transpiler, meta, depCache })
+
+      const browserImports = IS_BROWSER ? this.props.browserImports : {}
+      const serverImports = IS_BROWSER ? {} : this.props.serverImports
+
+      const imports = { ...universalImports, ...serverImports, ...browserImports }
+      //const imports = Array.from(new Set([ ...importsUniversal, ...(IS_BROWSER ? [] : importsServer), ...(IS_BROWSER ? importsBrowser : []) ]))
+      console.warn(&apos;IMPORTS&apos;, imports)
+
+      Promise.all(Object.keys(imports)
+                        .map(x =&gt; System.import(imports[x])
+                                        .then(Module =&gt; ({ [x]: Module }))
+                            ))
+              .then(modules =&gt; this.setState({ Modules: modules.reduce((Modules, Module) =&gt; ({ ...Modules, ...Module }), {})
+                                              }))
+    }
+  }
+}
 </code></pre>
 
 </div>
