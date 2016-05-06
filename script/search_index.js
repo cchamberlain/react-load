@@ -1,11 +1,5 @@
 window.esdocSearchIndex = [
   [
-    "react-load/lib/components/spinner.js~spinner",
-    "class/lib/components/Spinner.js~Spinner.html",
-    "<span>Spinner</span> <span class=\"search-result-import-path\">react-load/lib/components/Spinner.js</span>",
-    "class"
-  ],
-  [
     "builtinexternal/ecmascriptexternal.js~array",
     "external/index.html",
     "BuiltinExternal/ECMAScriptExternal.js~Array",
@@ -336,40 +330,10 @@ window.esdocSearchIndex = [
     "external"
   ],
   [
-    "lib/components/spinner.js",
-    "file/lib/components/Spinner.js.html",
-    "lib/components/Spinner.js",
+    "lib/components/createspinner.js",
+    "file/lib/components/createSpinner.js.html",
+    "lib/components/createSpinner.js",
     "file"
-  ],
-  [
-    "lib/components/spinner.js~spinner#animations",
-    "class/lib/components/Spinner.js~Spinner.html#instance-member-animations",
-    "lib/components/Spinner.js~Spinner#animations",
-    "member"
-  ],
-  [
-    "lib/components/spinner.js~spinner#componentwillmount",
-    "class/lib/components/Spinner.js~Spinner.html#instance-method-componentWillMount",
-    "lib/components/Spinner.js~Spinner#componentWillMount",
-    "method"
-  ],
-  [
-    "lib/components/spinner.js~spinner#constructor",
-    "class/lib/components/Spinner.js~Spinner.html#instance-constructor-constructor",
-    "lib/components/Spinner.js~Spinner#constructor",
-    "method"
-  ],
-  [
-    "lib/components/spinner.js~spinner#render",
-    "class/lib/components/Spinner.js~Spinner.html#instance-method-render",
-    "lib/components/Spinner.js~Spinner#render",
-    "method"
-  ],
-  [
-    "lib/components/spinner.js~spinner#sheet",
-    "class/lib/components/Spinner.js~Spinner.html#instance-member-sheet",
-    "lib/components/Spinner.js~Spinner#sheet",
-    "member"
   ],
   [
     "lib/index.js",
